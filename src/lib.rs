@@ -5,6 +5,7 @@ use std::{
 };
 
 mod lists;
+mod reports;
 
 fn input_data(day: &str, file: &str) -> String {
     format!("inputs/{day}/{file}")
@@ -58,5 +59,44 @@ mod day1 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 26800609);
+    }
+}
+
+#[cfg(test)]
+mod day2 {
+    use super::*;
+    use lists::*;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day2", name))
+    }
+
+    fn parse_reports(content: &str) -> Vec<Vec<i64>> {
+        content
+            .lines()
+            .map(|l| l.split(' ').map(|p| p.parse().unwrap()).collect::<Vec<_>>())
+            .collect()
+    }
+
+    fn solve_part1(input: &str) -> usize {
+        let reports = parse_reports(input);
+        let safe_reports = reports::safe_reports(&reports, (1, 3), false).count();
+        safe_reports
+    }
+
+    fn solve_part2(input: &str) -> usize {
+        let reports = parse_reports(input);
+        let safe_reports = reports::safe_reports(&reports, (1, 3), true).count();
+        safe_reports
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 479);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 531);
     }
 }
