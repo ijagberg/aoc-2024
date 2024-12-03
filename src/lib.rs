@@ -4,6 +4,7 @@ use std::{
     io::{self, BufRead, Read},
 };
 
+mod corruption;
 mod lists;
 mod reports;
 
@@ -98,5 +99,52 @@ mod day2 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 531);
+    }
+}
+
+#[cfg(test)]
+mod day3 {
+    use super::*;
+    use corruption::uncorrupt;
+    use lists::*;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day3", name))
+    }
+
+    fn solve_part1(content: &str) -> i64 {
+        uncorrupt(&content)
+            .unwrap()
+            .iter()
+            .map(|m| m.product())
+            .sum::<i64>()
+    }
+
+    fn solve_part2(content: &str) -> i64 {
+        uncorrupt(&content)
+            .unwrap()
+            .iter()
+            .filter_map(|m| m.product_checked())
+            .sum::<i64>()
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt")), 161);
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 171183089);
+    }
+
+    #[test]
+    fn part2_example2() {
+        assert_eq!(solve_part2(&test_file("example2.txt")), 48);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 63866497);
     }
 }
