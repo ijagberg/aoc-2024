@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 regex = "1.11.1"
+simple-grid = "2.2.1"

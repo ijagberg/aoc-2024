@@ -7,6 +7,7 @@ use std::{
 mod corruption;
 mod lists;
 mod reports;
+mod word_search;
 
 fn input_data(day: &str, file: &str) -> String {
     format!("inputs/{day}/{file}")
@@ -146,5 +147,58 @@ mod day3 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 63866497);
+    }
+}
+
+#[cfg(test)]
+mod day4 {
+    use super::*;
+    use simple_grid::Grid;
+    use word_search::WordSearch;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day4", name))
+    }
+
+    fn make_grid(content: &str) -> WordSearch {
+        let mut lines: Vec<_> = content.lines().collect();
+        let width = lines[0].len();
+        let height = lines.len();
+        let cells: Vec<char> = lines.join("").chars().collect();
+        WordSearch::new(Grid::new(width, height, cells))
+    }
+
+    fn solve_part1(content: &str) -> usize {
+        let puzzle = make_grid(content);
+        let count = puzzle.find_all_words(&['X', 'M', 'A', 'S']).len();
+
+        count
+    }
+
+    fn solve_part2(content: &str) -> usize {
+        let puzzle = make_grid(content);
+        let count = puzzle.find_all_crosses(&['M', 'A', 'S']).len();
+
+        count
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt")), 18);
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 2591);
+    }
+
+    #[test]
+    fn part2_example1() {
+        assert_eq!(solve_part2(&test_file("example1.txt")), 9);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 1880);
     }
 }
