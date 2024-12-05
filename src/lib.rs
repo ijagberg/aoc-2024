@@ -6,6 +6,7 @@ use std::{
 
 mod corruption;
 mod lists;
+mod pages;
 mod reports;
 mod word_search;
 
@@ -200,5 +201,93 @@ mod day4 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 1880);
+    }
+}
+
+#[cfg(test)]
+mod day5 {
+    use std::collections::{HashMap, HashSet};
+
+    use super::*;
+    use pages::PageRules;
+    use simple_grid::Grid;
+    use word_search::WordSearch;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day5", name))
+    }
+
+    fn parse_rules_and_pages(content: &str) -> (PageRules, Vec<Vec<u32>>) {
+        let mut lines = content.lines();
+
+        let mut page_rules = HashMap::new();
+        for line in lines.by_ref() {
+            if line.is_empty() {
+                break;
+            }
+            let (a, b) = line.split_once('|').unwrap();
+            let (a, b) = (a.parse::<u32>().unwrap(), b.parse::<u32>().unwrap());
+
+            page_rules.entry(a).or_insert(HashSet::new()).insert(b);
+        }
+
+        let mut page_collection = Vec::new();
+        for line in lines {
+            let pages = line.split(',').map(|p| p.parse().unwrap()).collect();
+            page_collection.push(pages);
+        }
+
+        (PageRules::new(page_rules), page_collection)
+    }
+
+    fn solve_part1(content: &str) -> u32 {
+        let (rules, pages) = parse_rules_and_pages(content);
+
+        pages
+            .iter()
+            .filter_map(|p| {
+                if rules.is_valid(&p) {
+                    Some(p[p.len() / 2])
+                } else {
+                    None
+                }
+            })
+            .sum()
+    }
+
+    fn solve_part2(content: &str) -> u32 {
+        let (rules, pages) = parse_rules_and_pages(content);
+
+        pages
+            .into_iter()
+            .filter_map(|p| {
+                if !rules.is_valid(&p) {
+                    let reordered = rules.reorder(p);
+                    Some(reordered[reordered.len() / 2])
+                } else {
+                    None
+                }
+            })
+            .sum()
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt")), 143);
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 5087);
+    }
+
+    #[test]
+    fn part2_example1() {
+        assert_eq!(solve_part2(&test_file("example1.txt")), 123);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 4971);
     }
 }
