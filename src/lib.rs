@@ -5,6 +5,7 @@ use std::{
 };
 
 mod corruption;
+mod guard;
 mod lists;
 mod pages;
 mod reports;
@@ -289,5 +290,75 @@ mod day5 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 4971);
+    }
+}
+
+#[cfg(test)]
+mod day6 {
+    use std::collections::HashSet;
+
+    use guard::{Cell, Direction, GuardMap};
+    use simple_grid::Grid;
+
+    use super::*;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day6", name))
+    }
+
+    fn parse_guard_map(content: &str) -> GuardMap {
+        let lines: Vec<String> = content.lines().map(|l| l.to_owned()).collect();
+        let cells = lines
+            .iter()
+            .flat_map(|l| l.chars())
+            .map(|c| match c {
+                '.' => Cell::Empty,
+                '^' => Cell::Guard(Direction::Up),
+                '>' => Cell::Guard(Direction::Right),
+                'v' => Cell::Guard(Direction::Down),
+                '<' => Cell::Guard(Direction::Left),
+                '#' => Cell::Wall,
+                c => unreachable!(),
+            })
+            .collect();
+
+        GuardMap::new(Grid::new(lines[0].len(), lines.len(), cells)).unwrap()
+    }
+
+    fn solve_part1(content: &str) -> usize {
+        let guard_map = parse_guard_map(content);
+
+        let walk = guard_map.get_guard_walk().unwrap();
+
+        let distinct: HashSet<_> = walk.into_iter().map(|(i, _)| i).collect();
+        distinct.len()
+    }
+
+    fn solve_part2(content: &str) -> usize {
+        let guard_map = parse_guard_map(content);
+        let obstacles = guard_map.get_obstacle_places();
+        dbg!(&obstacles);
+
+        obstacles.len()
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt")), 41);
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 5101);
+    }
+
+    #[test]
+    fn part2_example1() {
+        assert_eq!(solve_part2(&test_file("example1.txt")), 6);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 1951);
     }
 }
