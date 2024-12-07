@@ -5,6 +5,7 @@ use std::{
 };
 
 mod corruption;
+mod elephants;
 mod guard;
 mod lists;
 mod pages;
@@ -360,5 +361,85 @@ mod day6 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 1951);
+    }
+}
+
+#[cfg(test)]
+mod day7 {
+    use super::*;
+    use elephants::{Equation, Operation};
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day7", name))
+    }
+
+    fn parse_equations_with_results(content: &str) -> Vec<(i64, Equation)> {
+        let mut v = Vec::new();
+        for line in content.lines() {
+            let (result, numbers) = line.split_once(':').unwrap();
+            let (result, numbers) = (
+                result.parse::<i64>().unwrap(),
+                Equation::new(
+                    numbers
+                        .trim()
+                        .split(' ')
+                        .map(|p| p.parse().unwrap())
+                        .collect(),
+                ),
+            );
+            v.push((result, numbers));
+        }
+
+        v
+    }
+
+    fn solve(content: &str, operations: &[Operation]) -> i64 {
+        let equations = parse_equations_with_results(content);
+        let mut total = 0;
+
+        for (expected_result, equation) in equations {
+            if equation
+                .all_results(&operations, expected_result)
+                .into_iter()
+                .any(|r| r == expected_result)
+            {
+                total += expected_result;
+            }
+        }
+        total
+    }
+
+    fn solve_part1(content: &str) -> i64 {
+        let operations = vec![Operation::Addition, Operation::Multiplication];
+        solve(content, &operations)
+    }
+
+    fn solve_part2(content: &str) -> i64 {
+        let operations = vec![
+            Operation::Addition,
+            Operation::Multiplication,
+            Operation::Concatenation,
+        ];
+        solve(content, &operations)
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt")), 3749);
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 10741443549536);
+    }
+
+    #[test]
+    fn part2_example1() {
+        assert_eq!(solve_part2(&test_file("example1.txt")), 11387);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 500335179214836);
     }
 }
