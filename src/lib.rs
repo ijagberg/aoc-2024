@@ -4,6 +4,7 @@ use std::{
     io::{self, BufRead, Read},
 };
 
+mod antenna;
 mod corruption;
 mod elephants;
 mod guard;
@@ -441,5 +442,64 @@ mod day7 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 500335179214836);
+    }
+}
+
+#[cfg(test)]
+mod day8 {
+    use super::*;
+    use antenna::{Antenna, AntennaMap};
+    use simple_grid::Grid;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day8", name))
+    }
+
+    fn parse_antenna_map(content: &str) -> AntennaMap {
+        let lines: Vec<String> = content.lines().map(|l| l.to_owned()).collect();
+
+        let data = lines
+            .join("")
+            .chars()
+            .map(|c| match c {
+                '.' => None,
+                f => Some(Antenna::new(f)),
+            })
+            .collect();
+        AntennaMap::new(Grid::new(lines[0].len(), lines.len(), data))
+    }
+
+    fn solve_part1(content: &str) -> usize {
+        let antenna_map = parse_antenna_map(content);
+        let antinodes = antenna_map.get_antinodes();
+
+        antinodes.cell_iter().filter(|c| !c.is_empty()).count()
+    }
+
+    fn solve_part2(content: &str) -> usize {
+        let antenna_map = parse_antenna_map(content);
+        let antinodes = antenna_map.get_resonant_antinodes();
+
+        antinodes.cell_iter().filter(|c| !c.is_empty()).count()
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt")), 14);
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 318);
+    }
+
+    #[test]
+    fn part2_example1() {
+        assert_eq!(solve_part2(&test_file("example1.txt")), 34);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 1126);
     }
 }
