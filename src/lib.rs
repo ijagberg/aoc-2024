@@ -5,6 +5,7 @@ use std::{
 };
 
 mod antenna;
+mod blocks;
 mod corruption;
 mod elephants;
 mod guard;
@@ -501,5 +502,60 @@ mod day8 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 1126);
+    }
+}
+
+#[cfg(test)]
+mod day9 {
+    use super::*;
+    use blocks::FileBlocks;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day9", name))
+    }
+
+    fn parse_file_blocks(content: &str) -> FileBlocks {
+        let numbers: Vec<usize> = content
+            .trim()
+            .chars()
+            .map(|c| c.to_digit(10).unwrap() as usize)
+            .collect();
+
+        FileBlocks::from_disk_map(&numbers)
+    }
+
+    fn solve_part1(content: &str) -> usize {
+        let mut fb = parse_file_blocks(content);
+        fb.compact_fragmented();
+        fb.checksum()
+    }
+
+    fn solve_part2(content: &str) -> usize {
+        let mut fb = parse_file_blocks(content);
+        fb.compact_whole();
+        if let Some(s) = fb.get_string_if_possible() {
+            println!("{}", s);
+        }
+        fb.checksum()
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt")), 1928);
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 6241633730082);
+    }
+
+    #[test]
+    fn part2_example1() {
+        assert_eq!(solve_part2(&test_file("example1.txt")), 2858);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 6265268809555);
     }
 }
