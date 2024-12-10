@@ -9,6 +9,7 @@ mod blocks;
 mod corruption;
 mod elephants;
 mod guard;
+mod hike;
 mod lists;
 mod pages;
 mod reports;
@@ -557,5 +558,68 @@ mod day9 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 6265268809555);
+    }
+}
+
+#[cfg(test)]
+mod day10 {
+    use hike::TopographyMap;
+    use simple_grid::{Grid, GridIndex};
+
+    use super::*;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day10", name))
+    }
+
+    fn parse_map(content: &str) -> TopographyMap {
+        let lines: Vec<_> = content.lines().collect();
+        let heights: Vec<u8> = lines
+            .iter()
+            .map(|l| l.chars())
+            .flatten()
+            .map(|c| c.to_digit(10).unwrap() as u8)
+            .collect();
+
+        TopographyMap::new(Grid::new(lines[0].len(), lines.len(), heights))
+    }
+
+    fn solve_part1(content: &str) -> u32 {
+        let map = parse_map(content);
+
+        let mut score = 0;
+        for th in map.trailheads() {
+            let th_score = map.score(th).unwrap();
+            score += th_score;
+        }
+
+        score
+    }
+
+    fn solve_part2(content: &str) -> u32 {
+        let map = parse_map(content);
+
+        let mut rating = 0;
+        for th in map.trailheads() {
+            let th_rating = map.rating(th).unwrap();
+            rating += th_rating;
+        }
+
+        rating
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 646);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 1494);
+    }
+
+    #[test]
+    fn part2_example1() {
+        assert_eq!(solve_part2(&test_file("example1.txt")), 81);
     }
 }
