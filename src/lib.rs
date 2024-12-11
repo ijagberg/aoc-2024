@@ -13,6 +13,7 @@ mod hike;
 mod lists;
 mod pages;
 mod reports;
+mod stones;
 mod word_search;
 
 fn input_data(day: &str, file: &str) -> String {
@@ -563,10 +564,9 @@ mod day9 {
 
 #[cfg(test)]
 mod day10 {
+    use super::*;
     use hike::TopographyMap;
     use simple_grid::{Grid, GridIndex};
-
-    use super::*;
 
     fn test_file(name: &str) -> String {
         read_file_contents(&input_data("day10", name))
@@ -621,5 +621,50 @@ mod day10 {
     #[test]
     fn part2_example1() {
         assert_eq!(solve_part2(&test_file("example1.txt")), 81);
+    }
+}
+
+mod day11 {
+    use super::*;
+    use stones::Stones;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day11", name))
+    }
+
+    fn parse_stones(content: &str) -> Stones {
+        Stones::new(
+            &content
+                .split(' ')
+                .map(|p| p.parse().unwrap())
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    fn solve_part1(content: &str) -> u64 {
+        let mut stones = parse_stones(content);
+
+        stones.blink(25)
+    }
+
+    fn solve_part2(content: &str) -> u64 {
+        let mut stones = parse_stones(content);
+
+        stones.blink(75)
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 218956);
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt")), 55312);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 259593838049805);
     }
 }
