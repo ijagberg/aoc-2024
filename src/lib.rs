@@ -12,6 +12,7 @@ mod guard;
 mod hike;
 mod lists;
 mod pages;
+mod regions;
 mod reports;
 mod stones;
 mod word_search;
@@ -397,13 +398,16 @@ mod day7 {
         v
     }
 
-    fn solve(content: &str, operations: &[Operation]) -> i64 {
+    fn solve_part1(content: &str) -> i64 {
         let equations = parse_equations_with_results(content);
         let mut total = 0;
 
         for (expected_result, equation) in equations {
             if equation
-                .all_results(&operations, expected_result)
+                .all_results(
+                    &[Operation::Addition, Operation::Multiplication],
+                    expected_result,
+                )
                 .into_iter()
                 .any(|r| r == expected_result)
             {
@@ -413,18 +417,23 @@ mod day7 {
         total
     }
 
-    fn solve_part1(content: &str) -> i64 {
-        let operations = vec![Operation::Addition, Operation::Multiplication];
-        solve(content, &operations)
-    }
-
     fn solve_part2(content: &str) -> i64 {
-        let operations = vec![
-            Operation::Addition,
-            Operation::Multiplication,
-            Operation::Concatenation,
-        ];
-        solve(content, &operations)
+        let equations = parse_equations_with_results(content);
+        let mut total = 0;
+        for (expected_result, equation) in equations {
+            if equation.can_result_in(
+                &[
+                    Operation::Addition,
+                    Operation::Multiplication,
+                    Operation::Concatenation,
+                ],
+                expected_result,
+            ) {
+                total += expected_result;
+            }
+        }
+
+        total
     }
 
     #[test]
@@ -666,5 +675,71 @@ mod day11 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 259593838049805);
+    }
+}
+
+mod day12 {
+    use regions::{Plant, PlantMap};
+    use simple_grid::Grid;
+
+    use super::*;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day12", name))
+    }
+
+    fn parse_plants(content: &str) -> PlantMap {
+        let lines: Vec<String> = content
+            .lines()
+            .filter(|l| !l.trim().is_empty())
+            .map(|l| l.to_owned())
+            .collect();
+        let data: Vec<Plant> = lines
+            .iter()
+            .map(|l| l.chars().map(|c| Plant::new(c)))
+            .flatten()
+            .collect();
+
+        PlantMap::new(Grid::new(lines[0].len(), lines.len(), data))
+    }
+
+    fn solve_part1(content: &str) -> u64 {
+        let plant_map = parse_plants(content);
+
+        plant_map
+            .regions()
+            .iter()
+            .map(|r| (r.perimeter().len() * r.area()) as u64)
+            .sum()
+    }
+
+    fn solve_part2(content: &str) -> u64 {
+        let plant_map = parse_plants(content);
+
+        plant_map
+            .regions()
+            .iter()
+            .map(|r| (r.sides() * r.area()) as u64)
+            .sum()
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 1344578);
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt")), 1930);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 814302);
+    }
+
+    #[test]
+    fn part2_example1() {
+        assert_eq!(solve_part2(&test_file("example1.txt")), 1206);
     }
 }

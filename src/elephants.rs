@@ -16,6 +16,60 @@ impl Equation {
         results
     }
 
+    pub fn can_result_in(&self, operations: &[Operation], target: i64) -> bool {
+        Self::find_result_rec(0, &self.numbers, operations, target)
+    }
+
+    fn find_result_rec(
+        result_so_far: i64,
+        numbers: &[i64],
+        operations: &[Operation],
+        find_result: i64,
+    ) -> bool {
+        if result_so_far > find_result {
+            return false;
+        }
+        if numbers.is_empty() {
+            return result_so_far == find_result;
+        }
+        for operation in operations {
+            match operation {
+                Operation::Addition => {
+                    if Self::find_result_rec(
+                        result_so_far + numbers[0],
+                        &numbers[1..],
+                        operations,
+                        find_result,
+                    ) {
+                        return true;
+                    }
+                }
+                Operation::Multiplication => {
+                    if Self::find_result_rec(
+                        result_so_far * numbers[0],
+                        &numbers[1..],
+                        operations,
+                        find_result,
+                    ) {
+                        return true;
+                    }
+                }
+                Operation::Concatenation => {
+                    if Self::find_result_rec(
+                        Self::concatenate(result_so_far, numbers[0]),
+                        &numbers[1..],
+                        operations,
+                        find_result,
+                    ) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     fn all_results_rec(
         result_so_far: i64,
         numbers: &[i64],
