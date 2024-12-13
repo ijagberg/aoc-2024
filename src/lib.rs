@@ -5,6 +5,7 @@ use std::{
 };
 
 mod antenna;
+mod arcade;
 mod blocks;
 mod corruption;
 mod elephants;
@@ -633,6 +634,7 @@ mod day10 {
     }
 }
 
+#[cfg(test)]
 mod day11 {
     use super::*;
     use stones::Stones;
@@ -678,11 +680,11 @@ mod day11 {
     }
 }
 
+#[cfg(test)]
 mod day12 {
+    use super::*;
     use regions::{Plant, PlantMap};
     use simple_grid::Grid;
-
-    use super::*;
 
     fn test_file(name: &str) -> String {
         read_file_contents(&input_data("day12", name))
@@ -741,5 +743,86 @@ mod day12 {
     #[test]
     fn part2_example1() {
         assert_eq!(solve_part2(&test_file("example1.txt")), 1206);
+    }
+}
+
+#[cfg(test)]
+mod day13 {
+    use arcade::{ArcadeGame, Vec2};
+
+    use super::*;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day13", name))
+    }
+
+    fn parse_button(line: &str) -> Vec2 {
+        // "34, Y+12"
+        // will return (34, 12)
+        let (x_value, y_str) = line.split_once(", ").unwrap();
+        let y_value = y_str.trim_start_matches("Y+");
+        Vec2::new(x_value.parse().unwrap(), y_value.parse().unwrap())
+    }
+
+    fn parse_target(line: &str) -> Vec2 {
+        // "34, Y=12"
+        // will return (34, 12)
+        let (x_value, y_str) = line.split_once(", ").unwrap();
+        let y_value = y_str.trim_start_matches("Y=");
+        Vec2::new(x_value.parse().unwrap(), y_value.parse().unwrap())
+    }
+
+    fn parse_arcade_games(content: &str) -> Vec<ArcadeGame> {
+        let mut games = Vec::new();
+        let lines: Vec<_> = content.lines().collect();
+        for i in (0..lines.len()).step_by(4) {
+            let a_button_line = lines[i];
+            let a_button = parse_button(a_button_line.trim_start_matches("Button A: X+"));
+
+            let b_button_line = lines[i + 1];
+            let b_button = parse_button(b_button_line.trim_start_matches("Button B: X+"));
+
+            let target_line = lines[i + 2];
+            let target = parse_target(target_line.trim_start_matches("Prize: X="));
+
+            games.push(ArcadeGame::new(target, a_button, b_button));
+        }
+        games
+    }
+
+    fn solve_part1(content: &str) -> u64 {
+        let games = parse_arcade_games(content);
+        let mut cost = 0;
+        for game in games {
+            if let Some((na, nb)) = game.win() {
+                cost += na * 3 + nb * 1;
+            }
+        }
+
+        cost
+    }
+
+    fn solve_part2(content: &str) -> u64 {
+        let games = parse_arcade_games(content);
+        let mut cost = 0;
+        for mut game in games {
+            game.target_mut().x += 10000000000000;
+            game.target_mut().y += 10000000000000;
+            if let Some((na, nb)) = game.win() {
+                cost += na * 3 + nb * 1;
+            }
+        }
+
+        cost
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 33921);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt")), 82261957837868);
     }
 }
