@@ -15,6 +15,7 @@ mod lists;
 mod pages;
 mod regions;
 mod reports;
+mod robots;
 mod stones;
 mod word_search;
 
@@ -748,9 +749,8 @@ mod day12 {
 
 #[cfg(test)]
 mod day13 {
-    use arcade::{ArcadeGame, Vec2};
-
     use super::*;
+    use arcade::{ArcadeGame, Vec2};
 
     fn test_file(name: &str) -> String {
         read_file_contents(&input_data("day13", name))
@@ -824,5 +824,108 @@ mod day13 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt")), 82261957837868);
+    }
+}
+
+#[cfg(test)]
+mod day14 {
+    use super::*;
+    use robots::{Robot, Robots};
+    use std::collections::HashSet;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day14", name))
+    }
+
+    fn parse_robots(content: &str, width: u64, height: u64) -> Robots {
+        let mut robots = Vec::new();
+        for line in content.lines() {
+            // line: "p=0,4 v=3,-3"
+            let line = line.trim_start_matches("p=");
+            // line: "0,4 v=3,-3"
+            let (a, b) = line.split_once(' ').unwrap();
+            // a: "0,4"
+            // b: "v=3,-3"
+            let b = b.trim_start_matches("v=");
+            // b: "3,-3"
+            let (x, y) = a.split_once(',').unwrap();
+            let (vx, vy) = b.split_once(',').unwrap();
+
+            robots.push(Robot::new(
+                vx.parse().unwrap(),
+                vy.parse().unwrap(),
+                x.parse().unwrap(),
+                y.parse().unwrap(),
+            ));
+        }
+
+        Robots::new(width, height, robots)
+    }
+
+    fn get_robot_map_string(robots: &Robots) -> String {
+        let mut str = String::with_capacity((robots.height() * robots.width()) as usize);
+        for row in 0..robots.height() {
+            for column in 0..robots.width() {
+                let count = robots
+                    .robots()
+                    .iter()
+                    .filter(|robot| robot.xpos() == column && robot.ypos() == row)
+                    .count();
+                if count != 0 {
+                    str.push(char::from_digit(count as u32, 10).unwrap());
+                } else {
+                    str.push('.');
+                }
+            }
+            str.push('\n');
+        }
+
+        str
+    }
+
+    fn solve_part1(content: &str, width: u64, height: u64) -> u64 {
+        let mut robots = parse_robots(content, width, height);
+        robots.run(100);
+        let quadrants @ (a, b, c, d) = robots.count_in_quadrants();
+        a * b * c * d
+    }
+
+    fn solve_part2(content: &str, width: u64, height: u64) -> u64 {
+        let mut robots = parse_robots(content, width, height);
+
+        let mut strings = HashSet::with_capacity(10000);
+        for second in 0.. {
+            let (a, b, c, d) = robots.count_in_quadrants();
+            if a.abs_diff(b) > 200 || c.abs_diff(d) > 200 {
+                let s = get_robot_map_string(&robots);
+                // look for patterns that with many points in the same quadrants
+                if !strings.contains(&s) {
+                    println!("{}", get_robot_map_string(&robots));
+                    println!("{}", second);
+                    strings.insert(s);
+                } else {
+                    break;
+                }
+            }
+            robots.run(1);
+        }
+
+        // i let the program run and used my eyes to find the xmas tree 😎😎
+        7916
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt"), 11, 7), 12);
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt"), 101, 103), 221142636);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_part2(&test_file("input.txt"), 101, 103), 7916);
     }
 }
