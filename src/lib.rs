@@ -7,6 +7,7 @@ use std::{
 mod antenna;
 mod arcade;
 mod blocks;
+mod boxes;
 mod corruption;
 mod elephants;
 mod guard;
@@ -927,5 +928,85 @@ mod day14 {
     #[test]
     fn part2() {
         assert_eq!(solve_part2(&test_file("input.txt"), 101, 103), 7916);
+    }
+}
+
+#[cfg(test)]
+mod day15 {
+    use super::*;
+    use boxes::{BoxMap, Cell, Direction};
+    use io::Empty;
+    use simple_grid::Grid;
+
+    fn test_file(name: &str) -> String {
+        read_file_contents(&input_data("day15", name))
+    }
+
+    fn parse_box_map(content: &str) -> (BoxMap, Vec<Direction>) {
+        let lines: Vec<_> = content.lines().collect();
+        let division: Vec<_> = lines.split(|l| l.is_empty()).collect();
+
+        // map part
+        let map_lines = division[0];
+        let mut grid = Grid::new(
+            map_lines[0].len(),
+            map_lines.len(),
+            map_lines
+                .iter()
+                .map(|l| {
+                    l.chars().map(|c| match c {
+                        '#' => Cell::Wall,
+                        '.' => Cell::Empty,
+                        '@' => Cell::Robot,
+                        'O' => Cell::Box,
+                        _ => panic!(),
+                    })
+                })
+                .flatten()
+                .collect(),
+        );
+
+        let directions_lines = division[1];
+
+        let directions: Vec<Direction> = directions_lines
+            .iter()
+            .map(|l| {
+                l.chars().map(|c| match c {
+                    '<' => Direction::Left,
+                    '^' => Direction::Up,
+                    '>' => Direction::Right,
+                    'v' => Direction::Down,
+                    _ => panic!(),
+                })
+            })
+            .flatten()
+            .collect();
+
+        (BoxMap::new(grid), directions)
+    }
+
+    fn solve_part1(content: &str) -> u64 {
+        let (mut box_map, directions) = parse_box_map(content);
+
+        for direction in directions {
+            box_map.step(direction);
+        }
+
+        let mut gps_sum = 0;
+        for box_index in box_map.box_indices() {
+            gps_sum += 100 * box_index.row() + box_index.column();
+        }
+
+        gps_sum as u64
+    }
+
+    #[test]
+    fn part1_example1() {
+        assert_eq!(solve_part1(&test_file("example1.txt")), 10092);
+    }
+
+    #[test]
+    fn part1() {
+        assert_eq!(solve_part1(&test_file("input.txt")), 10092);
     }
 }
